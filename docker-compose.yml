@@ -1,0 +1,36 @@
+version: '2'
+services:
+  mongodb0:
+    image: mongo:latest
+    container_name: 'mongodb0'
+    environment:
+      - MONGO_DATA_DIR=/data/db
+      - MONGO_LOG_DIR=/dev/null
+    volumes:
+      - ./data/db1:/data/db
+      - ./config:/config
+    ports:
+      - 8891:27017
+    command: mongod --replSet "rs0" --bind_ip 0.0.0.0
+  mongodb1:
+    image: mongo:latest
+    container_name: 'mongodb1'
+    environment:
+      - MONGO_DATA_DIR=/data/db
+      - MONGO_LOG_DIR=/dev/null
+    volumes:
+      - ./data/db2:/data/db
+    ports:
+      - 8892:27017
+    command: mongod --replSet "rs0" --bind_ip 0.0.0.0
+  mongodb2:
+    image: mongo:latest
+    container_name: 'mongodb2'
+    environment:
+      - MONGO_DATA_DIR=/data/db
+      - MONGO_LOG_DIR=/dev/null
+    volumes:
+      - ./data/db3:/data/db
+    ports:
+      - 8893:27017
+    command: mongod --replSet "rs0" --bind_ip 0.0.0.0
