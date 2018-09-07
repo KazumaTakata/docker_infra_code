@@ -1,5 +1,15 @@
 version: '2'
 services:
+  server:
+    image: node:latest
+    container_name: 'node_server'
+    tty: true
+    volumes:
+      - ./src:/home/node
+    ports:
+      - 8282:8282
+      - 9229:9229
+    command: node --inspect-brk=0.0.0.0 /home/node/index.js
   mongodb0:
     image: mongo:latest
     container_name: 'mongodb0'
