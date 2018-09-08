@@ -1,4 +1,6 @@
 const MongoClient = require("mongodb").MongoClient;
+const name_constroller = require("./controller/name_index");
+const group_constroller = require("./controller/group_index");
 
 MongoClient.connect(
   "mongodb://mongodb0:27017,mongodb0:27017,mongodb2:27017?replicaSet=rs0"
@@ -14,37 +16,17 @@ MongoClient.connect(
     // start listen to changes
     changeStream.on("change", function(change) {
       console.log(change);
-      router(change);
+      name_constroller.controller(change);
     });
-    // insert few data with timeout so that we can watch it happening
+
+    const collection2 = db.collection("groups");
+    const changeStream2 = collection2.watch([]);
+    // start listen to changes
+    changeStream2.on("change", function(change) {
+      console.log(change);
+      group_constroller.controller(change);
+    });
   })
   .catch(err => {
     console.error(err);
   });
-
-async function router(change) {
-  type = change.operationType;
-  obj = change.fullDocument;
-  if (type == "insert") {
-    let insertobj = {
-      name: obj.name,
-      photourl: obj.photourl,
-      id: obj._id.toHexString(),
-    };
-    await elastic.addDocument(insertobj);
-  } else if (type == "update") {
-    let id = change.documentKey._id.toHexString();
-    let obj = change.updateDescription.updatedFields;
-    let keys = Object.keys(obj);
-    insertobj = {};
-    if (keys.includes("name")) {
-      insertobj["name"] = obj["name"];
-    }
-
-    if (keys.includes("photourl")) {
-      insertobj["photourl"] = obj["photourl"];
-    }
-
-    await elastic.updateDocument(id, insertobj);
-  }
-}
