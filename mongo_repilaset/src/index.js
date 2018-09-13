@@ -1,5 +1,5 @@
 const MongoClient = require("mongodb").MongoClient;
-const name_constroller = require("./controller/name_index");
+const name_constroller = require("./controller/individual_index");
 const group_constroller = require("./controller/group_index");
 
 MongoClient.connect(

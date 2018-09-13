@@ -5,8 +5,8 @@ var elasticClient = new elasticsearch.Client({
   log: "info",
 });
 
-var indexName = "messageappgrouptalk";
-let typeName = "talk";
+var indexName = "messageappgroup";
+let typeName = "group";
 
 /**
  * Delete an existing index
@@ -44,11 +44,9 @@ function initMapping() {
     type: typeName,
     body: {
       properties: {
-        senderid: { type: "text" },
-        content: { type: "text" },
-        time: { type: "keyword" },
-        groupid: { type: "text" },
-        filepath: { type: "keyword" },
+        id: { type: "keyword" },
+        name: { type: "text" },
+        description: { type: "text" },
       },
     },
   });
@@ -59,38 +57,29 @@ function addDocument(document) {
   return elasticClient.index({
     index: indexName,
     type: typeName,
+    id: document.id,
     body: {
-      senderid: document.senderid,
-      content: document.content,
-      time: document.time,
-      groupid: document.groupid,
-      filepath: document.filepath,
+      id: document.id,
+      name: document.name,
+      description: document.description,
     },
   });
 }
 exports.addDocument = addDocument;
 
-function updateTalkContent(obj) {
-  return elasticClient.updateByQuery({
+function updateDocument(id, updateobj) {
+  return elasticClient.update({
     index: indexName,
     type: typeName,
+    id: id,
     body: {
-      query: {
-        bool: {
-          must: [
-            { match: { senderid: obj.userid } },
-            { match: { groupid: obj.groupid } },
-            { match: { time: obj.time } },
-          ],
-        },
-      },
-      script: { inline: `ctx._source.content = '${obj.content}'` },
+      doc: updateobj,
     },
   });
 }
-exports.updateTalkContent = updateTalkContent;
+exports.updateDocument = updateDocument;
 
-function search(input, content) {
+function search(name) {
   return elasticClient.search({
     index: indexName,
     type: typeName,
@@ -100,16 +89,9 @@ function search(input, content) {
           must: [
             {
               match: {
-                groupid: {
-                  query: input,
-                },
-              },
-            },
-            {
-              match: {
-                content: {
-                  query: content,
-                  fuzziness: 2,
+                name: {
+                  query: name,
+                  fuzziness: 1,
                 },
               },
             },

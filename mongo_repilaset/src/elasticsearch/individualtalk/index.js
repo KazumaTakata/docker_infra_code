@@ -72,17 +72,25 @@ function addDocument(document) {
 }
 exports.addDocument = addDocument;
 
-function updateDocument(id, updateobj) {
-  return elasticClient.update({
+function updateTalkContent(obj) {
+  return elasticClient.updateByQuery({
     index: indexName,
     type: typeName,
-    id: id,
     body: {
-      doc: updateobj,
+      query: {
+        bool: {
+          must: [
+            { match: { userid: obj.userid } },
+            { match: { friendid: obj.friendid } },
+            { match: { time: obj.time } },
+          ],
+        },
+      },
+      script: { inline: `ctx._source.content = '${obj.content}'` },
     },
   });
 }
-exports.updateDocument = updateDocument;
+exports.updateTalkContent = updateTalkContent;
 
 function search(input, input2, content) {
   return elasticClient.search({
